@@ -37,7 +37,7 @@ if __name__ == '__main__':
     print("distances : ", dist, "\nindices : ", ind)'''
 
     dataset_vectors_200d = np.load('glove_200d/dataset_glove_200d.npy')
-    # dataset_words_200d = np.load('glove_200d/dataset_words_glove_200d.npy')
+    dataset_words_200d = np.load('glove_200d/dataset_words_glove_200d.npy')
     probes_vectors = np.load('glove_200d/probes_glove_200d.npy')
     probes_words = np.load('glove_200d/probes_words_glove_200d.npy')
 
@@ -54,9 +54,10 @@ if __name__ == '__main__':
 
     kt = NearestNeighbors(algorithm="kd_tree")
     bt = NearestNeighbors(algorithm="ball_tree")
-    algorithms = [('brute', bf), ('kd-tree', kt), ('ball-tree', bt)]
+    algorithms = [('brute', bf), #('kd-tree', kt)
+    ('ball-tree', bt)]
 
-    start_build = time.monotonic()
+    '''start_build = time.monotonic()
     bf.fit(dataset_vectors_200d)
     end_build = time.monotonic()
     print("build time : ", timedelta(seconds=end_build - start_build))
@@ -64,8 +65,8 @@ if __name__ == '__main__':
     result = bf.kneighbors(probes_vectors[:20])
     # result = bf.kneighbors(probes_vectors) Pour les 100 requêtes
     end_search = time.monotonic()
-    print("search time : ", timedelta(seconds=end_search - start_search))
-'''for name, alg in algorithms:
+    print("search time : ", timedelta(seconds=end_search - start_search))'''
+    for name, alg in algorithms:
         print(name)
         start_build = time.monotonic()
         alg.fit(dataset_vectors_200d)
@@ -75,6 +76,6 @@ if __name__ == '__main__':
         result = alg.kneighbors(probes_vectors[0].reshape(1, -1))
         end_search = time.monotonic()
         print("search time : ", timedelta(seconds=end_search - start_search))
-        print(result) '''
+        print(result)
 
 # Pour mesurer la durée d'éxécution en fonction de k, faire boucle for k in [2, 5, 10, 20]

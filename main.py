@@ -80,14 +80,84 @@ def activites():
 
     corr = data.corr()
     # print(corr)
-    pg.scatter_matrix(data, alpha=0.9)
-    plt.show()
+    # pg.scatter_matrix(data, alpha=0.9)
+    # plt.show()
 
     matrix_x = data.to_numpy()
     scaler = StandardScaler()
-    scaler.fit(matrix_x) # Compute the mean and std to be used for later scaling. Necessary before transform
+    scaler.fit(matrix_x)  # Compute the mean and std to be used for later scaling. Necessary before transform
     matrix_z = scaler.transform(matrix_x)  # fit the data (mean = 0) and scale the data (std = 1)
-    print("Mean : ", scaler.mean_, "\nStd : ", scaler.var_)
+    print("Mean : ", np.mean(matrix_z), "\nStd : ", np.var(matrix_z))
+
+    pca_ten_values = PCA()
+    pca_ten_values.fit(matrix_z)
+    # print("PCA components (principal axes: ", pca.components_, "\nPCA explained variance (eigenvalues): ",
+    # pca.explained_variance_, "\nPCA explained variance ratio (Percentage of variance explained by each of the
+    # selected components): ", pca.explained_variance_ratio_)
+    cumsum = np.cumsum(pca_ten_values.explained_variance_)
+    eig_val_desc = -np.sort(-pca_ten_values.explained_variance_)
+    explained_variance_ratio_desc = -np.sort(-pca_ten_values.explained_variance_ratio_)
+    '''print("Eigenvalues descending order : ", eig_val_desc,
+          "\nExplained variance ratio descending order : ", explained_variance_ratio_desc * 100,
+          "\nCumulated sum for inertia : ", cumsum)'''
+
+    x_eigenvalues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # plt.plot(cumsum, "r-", label='Cumulated sum')
+    # plt.bar(x_eigenvalues, eig_val_desc, width=0.02, color='green', label="Descending eigenvalues")
+    # plt.show()
+
+    pca_4_values = PCA(n_components=4)
+    pca_4_values.fit(matrix_z)
+    eigenvalues = pca_4_values.explained_variance_
+    print("Global quality with 4 axes kept : ", np.sum(eigenvalues) / np.sum(eig_val_desc))
+    matrix_z = pca_4_values.transform(matrix_z)
+    pop_np = pop.to_numpy()
+    # print(matrix_z)
+    '''fig, (ax1, ax2) = plt.subplots(2)
+    ax1.scatter(matrix_z[:, 0], matrix_z[:, 1])
+    ax2.scatter(matrix_z[:, 2], matrix_z[:, 3])
+    
+    for i in range(0, len(pop_np) - 1):
+        ax1.text(matrix_z[i, 0], matrix_z[i, 1], pop_np[i])
+        ax2.text(matrix_z[i, 2], matrix_z[i, 3], pop_np[i])
+    ax1.title.set_text("Axes 1 and 2")
+    ax2.title.set_text("Axes 3 and 4")'''
+
+    for j in range(0, 4):
+        contribution_to_every_axis = (1 / len(pop_np)) * matrix_z[:, j] * (1 / eigenvalues[j])
+        ind_max = np.argmax(contribution_to_every_axis)
+        print("Contribution to axis ", j + 1, " ", contribution_to_every_axis,
+              "\nArgmax : ", ind_max, " Nom : ", pop[ind_max], "\nValeur : ", contribution_to_every_axis[ind_max])
+
+    # plt.show()
+
+    four_eigenvectors = pca_4_values.components_
+    # print("Eigenvectors : ", four_eigenvectors)
+    four_first_principal_factors = np.zeros(4)
+    for k in range(0, 4):
+        four_first_principal_factors[k] = matrix_z[0, k] / np.sqrt(eig_val_desc[k])
+    print("Principal factors : ", four_first_principal_factors)
+
+    # corrélation des variables avec les axes
+    corvar = np.zeros((10, 4))
+
+    for k in range(4):
+        corvar[:, k] = pca_4_values.components_[k, :] * np.sqrt(eig_val_desc[k])
+        print(pca_4_values.components_[k, :])
+
+    # afficher la matrice des corrélations variables x facteurs
+    print(corvar)
+
+    fig, axes = plt.subplots(figsize=(8, 8))
+    axes.set_xlim(-1, 1)
+    axes.set_ylim(-1, 1)
+
+    cercle = plt.Circle((0, 0), 1, color='blue', fill=False)
+    axes.add_artist(cercle)
+    for j in range(10):
+        plt.annotate(columns_for_acp[j], (corvar[j, 0], corvar[j, 1]))
+
+    plt.show()
 
 
 # Press the green button in the gutter to run the script.
